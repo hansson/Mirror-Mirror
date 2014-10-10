@@ -18,6 +18,8 @@ import httplib2
 import StringIO
 import urlparse
 import sys
+import json
+import datetime
 
 from apiclient.discovery import build
 from oauth2client.client import AccessTokenRefreshError
@@ -178,30 +180,35 @@ class RequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
     service = build('calendar', 'v3', http=http)
 
-    calendars = get_calendars(service)
-
+    calendars = []
     request = service.calendarList().list()
     while request != None:
       response = request.execute()
       for calendar in response.get('items',[]):
-        currentCalendar = calendar.get('id','') + '\n'
-        output.write(currentCalendar.encode('utf-8'))
+        calendars.append(calendar.get('id',''))
       request = service.calendarList().list_next(request,response)
-   
-    request = service.events().list(calendarId='primary')
-    
-    while request != None:
-      response = request.execute()
-      for event in response.get('items', []):
-        currentEvent = event.get('summary') + '  - ' + event.get('start').get('dateTime',event.get('start').get('date')) + '\n'
-        output.write(currentEvent.encode('utf-8'))
+  
+    today = datetime.datetime.now().isoformat() + '+02:00'
+    inAWeek = (datetime.datetime.now() + datetime.timedelta(days=7)).isoformat() + '+01:00'
+    print inAWeek
+    eventList = []
+    for calendar in calendars:
+      request = service.events().list(calendarId=calendar,timeMin=today,timeMax=inAWeek)
+      while request != None:
+        response = request.execute()
+        for event in response.get('items', []):
+          if event.get('status') != u'cancelled':
+            date = event.get('start').get('dateTime',event.get('start').get('date'))
+            currentEvent = {}
+            currentEvent['summary'] = event.get('summary')
+            currentEvent['date'] = date
+            eventList.append(currentEvent)
       
-      request = service.events().list_next(request, response)
+        request = service.events().list_next(request, response)
 
+    output.write(json.dumps(eventList))
     return output.getvalue()
 
-  def get_calendars(service):
-    
   def get_credentials(self, user):
     """Using the fake user name as a key, retrieve the credentials."""
     storage = Storage('credentials-%s.dat' % (user))
