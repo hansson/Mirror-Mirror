@@ -173,45 +173,35 @@ class RequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     """Given the credentials, returns calendar data."""
     output = StringIO.StringIO()
 
-    # Now that we have credentials, calling the API is very similar to
-    # other authorized access examples.
-
-    # Create an httplib2.Http object to handle our HTTP requests, and authorize
-    # it using the credentials.authorize() function.
     http = httplib2.Http()
     http = credentials.authorize(http)
 
-    # The apiclient.discovery.build() function returns an instance of an API
-    # service object that can be used to make API calls.
-    # The object is constructed with methods specific to the calendar API.
-    # The arguments provided are:
-    #   name of the API ('calendar')
-    #   version of the API you are using ('v3')
-    #   authorized httplib2.Http() object that can be used for API calls
     service = build('calendar', 'v3', http=http)
 
-    # The Calendar API's events().list method returns paginated results, so we
-    # have to execute the request in a paging loop. First, build the request
-    # object. The arguments provided are:
-    #   primary calendar for user
-    request = service.events().list(calendarId='primary')
-    # Loop until all pages have been processed.
+    calendars = get_calendars(service)
+
+    request = service.calendarList().list()
     while request != None:
-      # Get the next page.
       response = request.execute()
-      # Accessing the response like a dict object with an 'items' key
-      # returns a list of item objects (events).
+      for calendar in response.get('items',[]):
+        currentCalendar = calendar.get('id','') + '\n'
+        output.write(currentCalendar.encode('utf-8'))
+      request = service.calendarList().list_next(request,response)
+   
+    request = service.events().list(calendarId='primary')
+    
+    while request != None:
+      response = request.execute()
       for event in response.get('items', []):
-        # The event object is a dict object with a 'summary' key.
         currentEvent = event.get('summary') + '  - ' + event.get('start').get('dateTime',event.get('start').get('date')) + '\n'
         output.write(currentEvent.encode('utf-8'))
-      # Get the next request object by passing the previous request object to
-      # the list_next method.
+      
       request = service.events().list_next(request, response)
 
-    # Return the string of calendar data.
     return output.getvalue()
 
+  def get_calendars(service):
+    
   def get_credentials(self, user):
     """Using the fake user name as a key, retrieve the credentials."""
     storage = Storage('credentials-%s.dat' % (user))
