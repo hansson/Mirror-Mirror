@@ -4,7 +4,13 @@
 	<link rel="stylesheet" type="text/css" href="style.css">
 </head>
 <body>
+  <script src="jquery-2.1.1.min.js"></script>
 	TEST
+  <script>
+  $.get("http://mirroronthewall.se:8080/?user=unzoomed", function(data){
+    alert(data);
+  });
+  </script>
 	
 </body>
 </html>
