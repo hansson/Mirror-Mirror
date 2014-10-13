@@ -5,11 +5,91 @@
 </head>
 <body>
   <script src="jquery-2.1.1.min.js"></script>
-	TEST
+  <ul id="calendar">
+
+  </ul>
   <script>
-  $.get("http://mirroronthewall.se:8080/?user=unzoomed", function(data){
-    alert(data);
-  });
+  var events;
+  setInterval(getCalendar, 600000);
+  getCalendar();
+
+  function getCalendar() {
+    $.get("http://mirroronthewall.se:8080/?user=unzoomed", function(data){
+      events = JSON.parse(data);
+      sortEvents();
+      var html = '';
+      for (var i = events.length - 1; i >= 0; i--) {
+        var date = resolveDateString(events[i].date);
+
+        html += '<li><h3>' + events[i].summary + '</h3><h4>' + date + '</h4></li>';
+      };
+      $('#calendar').html(html);
+    });
+  }
+
+  function resolveDateString(date) {
+     var d = new Date(date);
+      var day;
+      if(d.getDate() < 10) {
+        day = "0" + d.getDate();
+      } else {
+        day = d.getDate();
+      }
+      
+      var month;
+      if((d.getMonth() + 1) < 10) {
+        month = "0" + (d.getMonth() + 1);
+      } else {
+        month = (d.getMonth() + 1);
+      }
+
+      var hours;
+      if((d.getHours()) < 10) {
+        hours = "0" + d.getHours();
+      } else {
+        hours = d.getHours();
+      }
+
+      var minutes;
+      if((d.getMinutes()) < 10) {
+        minutes = "0" + d.getMinutes();
+      } else {
+        minutes = d.getMinutes();
+      }
+
+      var time = '';
+      var offset = d.getTimezoneOffset() / 60;
+      if(offset < 0) {
+        offset *= -1;
+      }
+      if((d.getHours() - offset ) > 0) {
+        time = hours + ':' + minutes;
+      }
+
+
+      return d.getFullYear() + "-" + month + "-" + day + "&nbsp;&nbsp;&nbsp;&nbsp;" + time;
+  }
+
+  function sortEvents() {
+    events = events.sort(function(a, b) {
+      var first = a['date'];
+      var second = b['date'];
+      
+      if(!second) {
+        return 1; 
+      }
+      
+      if(!first) {
+        return -1; 
+      }
+      
+      first = new Date(first);
+      second = new Date(second);
+      
+      return (second > first) ? 1 : ((second < first) ? -1 : 0);
+    });
+  }
+
   </script>
 	
 </body>

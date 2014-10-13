@@ -40,6 +40,7 @@ class RequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
                              redirect_uri='http://mirroronthewall.se:8080/')
   runPath = sys.argv[0]
   runPath = runPath[:len(runPath)-9]
+  credentialsPath = sys.argv[3]
 
   def do_GET(self):
     """Handler for GET request."""
@@ -93,7 +94,7 @@ class RequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     self.end_headers()
 
   def respond_with_file(self):
-    requestedFile = self.path[1:]
+    requestedFile = self.runPath + self.path[1:]
     if os.path.isfile(requestedFile):
       self.send_file(requestedFile)
     else:
@@ -103,7 +104,7 @@ class RequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
       self.send_header('Cache-Control', 'no-cache')
       self.end_headers()
       self.wfile.write(
-        'This path is invalid %s\n\n' % self.path)
+        'This path is invalid %s\n\n' % requestedFile)
 
   def respond_calendar_data(self, calendar_output):
     """Responds to the current request by writing calendar data to stream."""
@@ -118,7 +119,7 @@ class RequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     self.send_header('Content-type', self.resolve_content_type(requestedFile))
     self.send_header('Cache-control', 'no-cache')
     self.end_headers()
-    f = open(self.runPath + requestedFile, 'r')
+    f = open(requestedFile, 'r')
     #This is pretty unsafe! Never do this outside the mirror :D
     self.wfile.write(f.read())
 
@@ -180,12 +181,12 @@ class RequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
   
   def get_credentials(self, user):
     """Using the fake user name as a key, retrieve the credentials."""
-    storage = Storage('credentials-%s.dat' % (user))
+    storage = Storage(self.credentialsPath + 'credentials-%s.dat' % (user))
     return storage.get()
 
   def save_credentials(self, user, credentials):
     """Using the fake user name as a key, save the credentials."""
-    storage = Storage('credentials-%s.dat' % (user))
+    storage = Storage(self.credentialsPath + 'credentials-%s.dat' % (user))
     storage.put(credentials)
 
   def get_user_from_url_param(self):
