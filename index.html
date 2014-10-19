@@ -9,71 +9,65 @@
 
   </ul>
   <script>
+  //Define globals
   var events;
-  setInterval(getCalendar, 600000);
-  getCalendar();
 
-  function getCalendar() {
-    $.get("http://mirroronthewall.se:8080/?user=unzoomed", function(data){
-      events = JSON.parse(data);
+  //Define intervals
+  setInterval(reDrawAll, 1000); //Everything should be redrawn once a second
+  setInterval(makeApiCall,60000); //Request calendar updates once a minute
+
+  function reDrawAll() {
+    if(events.size > 0) {
       sortEvents();
       var html = '';
       for (var i = events.length - 1; i >= 0; i--) {
-        var date = resolveDateString(events[i].date);
-
-        html += '<li><h3>' + events[i].summary + '</h3><h4>' + date + '</h4></li>';
+        var date;
+        var time;
+        if(events[i].start.dateTime) {
+          date = new Date(events[i].start.dateTime);
+          time = resolveTimeString(new Date(events[i].start.dateTime));
+        } else {
+          date = new Date(events[i].start.date);
+        }
+         
+        html += '<li><h3>' + events[i].summary + time + '</h3><h4>' + date.toLocaleDateString() + '</h4></li>';
       };
       $('#calendar').html(html);
-    });
+    }
   }
 
-  function resolveDateString(date) {
-     var d = new Date(date);
-      var day;
-      if(d.getDate() < 10) {
-        day = "0" + d.getDate();
-      } else {
-        day = d.getDate();
-      }
-      
-      var month;
-      if((d.getMonth() + 1) < 10) {
-        month = "0" + (d.getMonth() + 1);
-      } else {
-        month = (d.getMonth() + 1);
-      }
+  function resolveTimeString(date) {
+    var hours;
+    if((date.getHours()) < 10) {
+      hours = "0" + date.getHours();
+    } else {
+      hours = date.getHours();
+    }
 
-      var hours;
-      if((d.getHours()) < 10) {
-        hours = "0" + d.getHours();
-      } else {
-        hours = d.getHours();
-      }
+    var minutes;
+    if((date.getMinutes()) < 10) {
+      minutes = "0" + date.getMinutes();
+    } else {
+      minutes = date.getMinutes();
+    }
 
-      var minutes;
-      if((d.getMinutes()) < 10) {
-        minutes = "0" + d.getMinutes();
-      } else {
-        minutes = d.getMinutes();
-      }
-
-      var time = '';
-      var offset = d.getTimezoneOffset() / 60;
-      if(offset < 0) {
-        offset *= -1;
-      }
-      if((d.getHours() - offset ) > 0) {
-        time = hours + ':' + minutes;
-      }
+    var time = '';
+    var offset = date.getTimezoneOffset() / 60;
+    if(offset < 0) {
+      offset *= -1;
+    }
+    if((date.getHours() - offset ) > 0) {
+      time = hours + ':' + minutes;
+    }
 
 
-      return d.getFullYear() + "-" + month + "-" + day + "&nbsp;&nbsp;&nbsp;&nbsp;" + time;
+    return ", " + time;
   }
 
   function sortEvents() {
     events = events.sort(function(a, b) {
-      var first = a['date'];
-      var second = b['date'];
+      var first = a['start'];
+      var second = b['start'];
       
       if(!second) {
         return 1; 
@@ -83,14 +77,91 @@
         return -1; 
       }
       
-      first = new Date(first);
+      if(first.dateTime) {
+        first = new Date(first.dateTime);
+      } else {
+        first = new Date(first.date);
+      }
+
+      if(second.dateTime) {
+        second = new Date(second.dateTime);
+      } else {
+        second = new Date(second.date);
+      }
+
       second = new Date(second);
       
       return (second > first) ? 1 : ((second < first) ? -1 : 0);
     });
   }
 
+  var clientId = '71124067488-qdt55d21tgbdrjgm96qqe1ispcai2tc2.apps.googleusercontent.com';
+                  
+  var apiKey = 'AIzaSyBJTHm_30MrQTHwYELT4Cpf-RURkHuGpek';
+  var scopes = 'https://www.googleapis.com/auth/calendar.readonly';
+
+  function handleClientLoad() {
+    gapi.client.setApiKey(apiKey);
+    window.setTimeout(checkAuth,1);
+  }
+
+  function checkAuth() {
+    gapi.auth.authorize({client_id: clientId, scope: scopes, immediate: true}, handleAuthResult);
+  }
+
+  function handleAuthResult(authResult) {
+    var authorizeButton = document.getElementById('authorize-button');
+    if (authResult && !authResult.error) {
+      authorizeButton.style.visibility = 'hidden';
+      makeApiCall();
+    } else {
+      authorizeButton.style.visibility = '';
+      authorizeButton.onclick = handleAuthClick;
+    }
+  }
+
+  function handleAuthClick(event) {
+    gapi.auth.authorize({client_id: clientId, scope: scopes, immediate: false}, handleAuthResult);
+    return false;
+  }
+
+  function makeApiCall() {
+    events = [];
+    gapi.client.load('calendar', 'v3').then(function() {
+      var request = gapi.client.calendar.calendarList.list();
+      request.then(function(resp) {
+        calendars = JSON.parse(resp.body).items;
+        var today = new Date();
+        var nextWeek = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
+        for (var i = calendars.length - 1; i >= 0; i--) {
+          var parameters = {
+            calendarId: calendars[i].id,
+            timeMin: today.toISOString(),
+            timeMax: nextWeek.toISOString(),
+            singleEvents: true,
+          };
+          request = gapi.client.calendar.events.list(parameters);
+          request.then(function(resp){
+            fetchedEvents = JSON.parse(resp.body).items;
+            for (var i = fetchedEvents.length - 1; i >= 0; i--) {
+              events.push(fetchedEvents[i]);
+            };
+          });
+        };
+      }, function(reason) {
+        console.log('Error: ' + reason.result.error.message);
+      });
+    });
+  }
+
   </script>
+
+  <!--Add a button for the user to click to initiate auth sequence -->
+  <button id="authorize-button" style="visibility: hidden">Authorize</button>
+  <script src="https://apis.google.com/js/client.js?onload=handleClientLoad"></script>
+
+   
+
 	
 </body>
 </html>

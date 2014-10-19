@@ -54,9 +54,6 @@ class RequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     else:
       self.respond_with_file()
 
-  def send_template(self, calendarData):
-    """Build and send index.html template"""
-
 
   def handle_initial_url(self):
     """Handles the initial path."""
