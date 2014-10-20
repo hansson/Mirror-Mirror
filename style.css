@@ -2,6 +2,7 @@ body {
   background-color: #000;
   color: #fff;
   font-family: "acknowtt", monospace;
+  overflow: hidden;
 }
 
 h3, h4 {
@@ -20,7 +21,33 @@ ul {
 }
 
 #calendar {
+  position: absolute;
+  top: 50px;
+  left: 0px;
   display: inline-block;
+  width: 300px;
+}
+
+#currentTime {
+  display: inline-block;
+  font-size: 60px;
+  text-align: center;
+  width: 180px;
+}
+
+#currentSeconds {
+  display: inline-block;
+  font-size: 150px;
+  text-align: center;
+  line-height: 0.70;
+  width: 180px;
+}
+
+#timeContainer {
+  position: absolute;
+  right: 0px;
+  top:50px;
+  width: 180px;
 }
 
 
