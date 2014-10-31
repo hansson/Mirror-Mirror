@@ -50,4 +50,10 @@ ul {
   width: 180px;
 }
 
+#currentDate {
+  font-size: 32px;
+  text-align: center;
+  width: 100%;
+}
+
 

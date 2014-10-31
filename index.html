@@ -5,6 +5,7 @@
 </head>
 <body>
   <script src="jquery-2.1.1.min.js"></script>
+  <div id="currentDate"></div>
   <div id="timeContainer">
     <div id="currentTime"></div>
     <div id="currentSeconds"></div>
@@ -18,12 +19,23 @@
   var returnCount;
 
   //Define intervals
-  setInterval(reDrawTime, 1000); //Everything should be redrawn once a second
+  setInterval(reDrawTime, 1000); //Redraw everything related to time once a second
   setInterval(makeApiCall,60000); //Request calendar updates once a minute
+  setInterval(reDrawWeather,3600000); //Request weather data once per hour
+
+  reDrawWeather();
+
+  function reDrawWeather() {
+    $.get('http://api.openweathermap.org/data/2.5/forecast?q=Karlskrona,se&mode=json', function(data) {
+      console.log(data);
+    });
+  }
 
   function reDrawTime() {
-    $('#currentTime').html(resolveTimeString(new Date()));
-    $('#currentSeconds').html(new Date().getSeconds());
+    var date = new Date();
+    $('#currentDate').html(date.toDateString());
+    $('#currentTime').html(resolveTimeString(date));
+    $('#currentSeconds').html(resolveSecondsString(date));
   }
 
   function reDrawCalendar() {
@@ -45,6 +57,16 @@
       };
       $('#calendar').html(calendar);
     }
+  }
+
+  function resolveSecondsString(date) {
+    var seconds;
+    if((date.getSeconds()) < 10) {
+      seconds = "0" + date.getSeconds();
+    } else {
+      seconds = date.getSeconds();
+    }
+    return seconds;
   }
 
   function resolveTimeString(date) {
