@@ -84,14 +84,7 @@
       minutes = date.getMinutes();
     }
 
-    var time = '';
-    var offset = date.getTimezoneOffset() / 60;
-    if(offset < 0) {
-      offset *= -1;
-    }
-    if((date.getHours() - offset ) > 0) {
-      time = hours + ':' + minutes;
-    }
+    var time = hours + ':' + minutes;
 
 
     return time;

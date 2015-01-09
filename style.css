@@ -1,7 +1,7 @@
 body {
   background-color: #000;
   color: #fff;
-  font-family: "acknowtt", monospace;
+  font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;;
   overflow: hidden;
 }
 
@@ -20,12 +20,16 @@ ul {
   padding: 0px;
 }
 
+li {
+  padding-top: 15px;
+}
+
 #calendar {
   position: absolute;
-  top: 50px;
+  top: 85px;
   left: 0px;
   display: inline-block;
-  width: 300px;
+  width: 500px;
 }
 
 #currentTime {
@@ -46,11 +50,12 @@ ul {
 #timeContainer {
   position: absolute;
   right: 0px;
-  top:50px;
+  top:85px;
   width: 180px;
 }
 
 #currentDate {
+  margin-top: 35px;
   font-size: 32px;
   text-align: center;
   width: 100%;
