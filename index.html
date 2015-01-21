@@ -11,6 +11,7 @@
     <div id="currentSeconds"></div>
   </div>
   <ul id="calendar"></ul>
+  <div id="excuse"></div>
   
   <script>
   //Define globals
@@ -22,13 +23,21 @@
   setInterval(reDrawTime, 1000); //Redraw everything related to time once a second
   setInterval(makeApiCall,60000); //Request calendar updates once a minute
   setInterval(reDrawWeather,3600000); //Request weather data once per hour
+  setInterval(reDrawExcuse,3600000); //Request excuse data once per hour
 
   reDrawWeather();
+  reDrawExcuse();
+
+  function reDrawExcuse() {
+    $.get('excuse.json', function(data) {
+       $('#currentDate').html(data.excuse);
+    });
+  }
 
   function reDrawWeather() {
-    $.get('http://api.openweathermap.org/data/2.5/forecast?q=Karlskrona,se&mode=json', function(data) {
-      console.log(data);
-    });
+    //$.get('http://api.openweathermap.org/data/2.5/forecast?q=Karlskrona,se&mode=json', function(data) {
+      //console.log(data);
+    //});
   }
 
   function reDrawTime() {

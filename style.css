@@ -61,4 +61,11 @@ li {
   width: 100%;
 }
 
+#currentDate {
+  margin-bottom: 0px;
+  font-size: 32px;
+  text-align: center;
+  width: 100%;
+}
+
 

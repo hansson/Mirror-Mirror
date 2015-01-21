@@ -21,11 +21,13 @@ import sys
 import json
 import datetime
 import os.path
+import urllib
 
 from apiclient.discovery import build
 from oauth2client.client import AccessTokenRefreshError
 from oauth2client.client import OAuth2WebServerFlow
 from oauth2client.file import Storage
+from lxml import html
 
 class RequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
   """Child class of BaseHTTPRequestHandler that only handles GET request."""
@@ -45,6 +47,16 @@ class RequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     requestedFile = self.runPath + self.path[1:]
     if os.path.isfile(requestedFile):
       self.send_file(requestedFile)
+    else if:
+      url = "http://programmingexcuses.com/"
+      page = html.fromstring(urllib.urlopen(url).read())
+
+      for link in page.xpath("//a"):
+        self.send_response(200)
+        self.send_header('Content-type', 'application/json')
+        self.send_header('Cache-Control', 'no-cache')
+        self.end_headers()
+        self.wfile.write('{"excuse":"%s"' % link.text)
     else:
       """Responds to the current request that has an unknown path."""
       self.send_response(404)
