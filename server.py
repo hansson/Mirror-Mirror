@@ -47,7 +47,7 @@ class RequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     requestedFile = self.runPath + self.path[1:]
     if os.path.isfile(requestedFile):
       self.send_file(requestedFile)
-    else if:
+    elif os.path == "excuse.json":
       url = "http://programmingexcuses.com/"
       page = html.fromstring(urllib.urlopen(url).read())
 
