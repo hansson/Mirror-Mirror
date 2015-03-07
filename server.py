@@ -1,17 +1,3 @@
-# Copyright 2012 Google Inc. All Rights Reserved.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#    http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 import BaseHTTPServer
 import Cookie
 import httplib2
@@ -22,6 +8,7 @@ import json
 import datetime
 import os.path
 import urllib
+import soco
 
 from apiclient.discovery import build
 from oauth2client.client import AccessTokenRefreshError
@@ -31,7 +18,6 @@ from lxml import html
 
 class RequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
   """Child class of BaseHTTPRequestHandler that only handles GET request."""
-
   runPath = sys.argv[0]
   runPath = runPath[:len(runPath)-9]
 
@@ -47,7 +33,8 @@ class RequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     requestedFile = self.runPath + self.path[1:]
     if os.path.isfile(requestedFile):
       self.send_file(requestedFile)
-    elif os.path == "excuse.json":
+    elif requestedFile.endswith('excuse.json'):
+    #Get programming excuse
       url = "http://programmingexcuses.com/"
       page = html.fromstring(urllib.urlopen(url).read())
 
@@ -56,7 +43,32 @@ class RequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         self.send_header('Content-type', 'application/json')
         self.send_header('Cache-Control', 'no-cache')
         self.end_headers()
-        self.wfile.write('{"excuse":"%s"' % link.text)
+        self.wfile.write('{"excuse":"%s"}\n' % link.text)
+        return
+    elif requestedFile.endswith('sonos.json'):
+    #Get information from sonos system
+      speakers = soco.discover()
+      sonos_info = None
+      for speaker in speakers:
+       tmp_sonos_info = speaker.get_current_track_info()
+       transport_info = speaker.get_current_transport_info()
+       if tmp_sonos_info['artist'] and transport_info['current_transport_state'] == 'PLAYING':
+         sonos_info = tmp_sonos_info
+         break
+      if sonos_info:
+        artist = sonos_info['artist']
+        title = sonos_info['title']
+        art = sonos_info['album_art']
+        duration = sonos_info['duration']
+        position = sonos_info['position']
+      self.send_response(200)
+      self.send_header('Content-type', 'application/json')
+      self.send_header('Cache-Control', 'no-cache')
+      self.end_headers()
+      if sonos_info:
+        self.wfile.write('{"status":"on", artist":"%s","title":"%s","art":"%s","duration":"%s","position":"%s"}\n' % (artist, title, art, duration, position))
+      else:
+        self.wfile.write('{"status":"off"}')
     else:
       """Responds to the current request that has an unknown path."""
       self.send_response(404)
@@ -82,6 +94,8 @@ class RequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
       return 'text/css; charset=utf-8'
     elif requestedFile.endswith('.js'):
       return 'application/javascript'
+    elif requestedFile.endswith('.jpg'):
+      return 'image/jpeg'
     else:
       return 'text/plain; charset=utf8'
 

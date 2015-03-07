@@ -6,12 +6,14 @@
 <body>
   <script src="jquery-2.1.1.min.js"></script>
   <div id="currentDate"></div>
+  <ul id="calendar"></ul>
   <div id="timeContainer">
     <div id="currentTime"></div>
     <div id="currentSeconds"></div>
   </div>
-  <ul id="calendar"></ul>
   <div id="excuse"></div>
+  <div id="sonos">
+  </div>
   
   <script>
   //Define globals
@@ -21,16 +23,34 @@
 
   //Define intervals
   setInterval(reDrawTime, 1000); //Redraw everything related to time once a second
-  setInterval(makeApiCall,60000); //Request calendar updates once a minute
+  setInterval(checkAuth,60000); //Request calendar updates once a minute
   setInterval(reDrawWeather,3600000); //Request weather data once per hour
   setInterval(reDrawExcuse,3600000); //Request excuse data once per hour
 
   reDrawWeather();
   reDrawExcuse();
+  reDrawSonos();
+
+  function reDrawSonos() {
+    $.get('sonos.json', function(data){
+      var timeout = 10000;
+      if(data && data.artist) {
+      $('#sonos').html('<p><img src="' + data.art +'" /><br /><u>' + data.artist  + '</u><br /> '+ data.title  + '</p>');
+        var duration = getMilliseconds(data.duration);
+        var position = getMilliseconds(data.position);
+        timeout = duration - position;
+      } else {
+        $('#sonos').html('');
+      }
+      setTimeout(reDrawSonos, timeout);
+    }).fail(function() {
+      setTimeout(reDrawSonos, 10000);
+    });
+  }
 
   function reDrawExcuse() {
     $.get('excuse.json', function(data) {
-       $('#currentDate').html(data.excuse);
+       $('#excuse').html(data.excuse);
     });
   }
 
@@ -66,6 +86,14 @@
       };
       $('#calendar').html(calendar);
     }
+  }
+
+  function getMilliseconds(timeString) {
+    var timeValues = timeString.split(':');
+    var minutes = parseInt(timeValues[0]) * 60;
+    minutes += parseInt(timeValues[1]);
+    var seconds = minutes * 60 + parseInt(timeValues[2]);
+    return seconds * 1000;
   }
 
   function resolveSecondsString(date) {
