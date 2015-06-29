@@ -66,7 +66,7 @@ class RequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
       self.send_header('Cache-Control', 'no-cache')
       self.end_headers()
       if sonos_info:
-        self.wfile.write('{"status":"on", artist":"%s","title":"%s","art":"%s","duration":"%s","position":"%s"}\n' % (artist, title, art, duration, position))
+        self.wfile.write('{"status":"on", "artist":"%s","title":"%s","art":"%s","duration":"%s","position":"%s"}\n' % (artist, title, art, duration, position))
       else:
         self.wfile.write('{"status":"off"}')
     else:

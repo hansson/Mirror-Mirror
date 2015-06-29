@@ -23,7 +23,7 @@
 
   //Define intervals
   setInterval(reDrawTime, 1000); //Redraw everything related to time once a second
-  setInterval(checkAuth,60000); //Request calendar updates once a minute
+//  setInterval(checkAuth,60000); //Request calendar updates once a minute
   setInterval(reDrawWeather,3600000); //Request weather data once per hour
   setInterval(reDrawExcuse,3600000); //Request excuse data once per hour
 
@@ -43,7 +43,7 @@
         $('#sonos').html('');
       }
       setTimeout(reDrawSonos, timeout);
-    }).fail(function() {
+    }).error(function() {
       setTimeout(reDrawSonos, 10000);
     });
   }
@@ -158,7 +158,7 @@
     });
   }
 
-  var clientId = '71124067488-qdt55d21tgbdrjgm96qqe1ispcai2tc2.apps.googleusercontent.com';
+  /*var clientId = '71124067488-qdt55d21tgbdrjgm96qqe1ispcai2tc2.apps.googleusercontent.com';
                   
   var apiKey = 'AIzaSyBJTHm_30MrQTHwYELT4Cpf-RURkHuGpek';
   var scopes = 'https://www.googleapis.com/auth/calendar.readonly';
@@ -219,13 +219,13 @@
         console.log('Error: ' + reason.result.error.message);
       });
     });
-  }
+  }*/
 
   </script>
 
   <!--Add a button for the user to click to initiate auth sequence -->
-  <button id="authorize-button" style="visibility: hidden">Authorize</button>
-  <script src="https://apis.google.com/js/client.js?onload=handleClientLoad"></script>
+  <!--<button id="authorize-button" style="visibility: hidden">Authorize</button> -->
+  <!--<script src="https://apis.google.com/js/client.js?onload=handleClientLoad"></script>-->
 
    
 

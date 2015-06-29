@@ -28,7 +28,10 @@ li {
   position: absolute;
   top: 270px;
   right: 0px;
-  width: 180px;
+}
+
+#sonos img {
+  max-width: 180px;
 }
 
 #calendar {
