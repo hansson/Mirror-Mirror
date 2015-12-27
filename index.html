@@ -11,6 +11,7 @@
     <div id="currentTime"></div>
     <div id="currentSeconds"></div>
   </div>
+  <div id="olivia"></div>
   <div id="excuse"></div>
   <div id="sonos">
   </div>
@@ -26,11 +27,13 @@
   //setInterval(checkAuth,60000); //Request calendar updates once a minute
   //setInterval(reDrawWeather,3600000); //Request weather data once per hour
   setInterval(reDrawExcuse,3600000); //Request excuse data once per hour
+  setInterval(reDrawOlivia,500); //Check for olivia input twice per second 
 
   //reDrawWeather();
   reDrawTime();
   reDrawExcuse();
   reDrawSonos();
+  reDrawOlivia();
 
   function reDrawSonos() {
     $.get('sonos.json', function(data){
@@ -55,6 +58,12 @@
   function reDrawExcuse() {
     $.get('excuse.json', function(data) {
        $('#excuse').html(data.excuse);
+    });
+  }
+
+  function reDrawOlivia() {
+    $.get('olivia.json', function(data) {
+       $('#olivia').html(data.value);
     });
   }
 

@@ -1,3 +1,4 @@
+# coding=utf-8
 import BaseHTTPServer
 import Cookie
 import httplib2
@@ -9,6 +10,7 @@ import datetime
 import os.path
 import urllib
 import soco
+import random
 
 from apiclient.discovery import build
 from oauth2client.client import AccessTokenRefreshError
@@ -16,10 +18,18 @@ from oauth2client.client import OAuth2WebServerFlow
 from oauth2client.file import Storage
 from lxml import html
 
+oliviaIndex = 0
+
 class RequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
   """Child class of BaseHTTPRequestHandler that only handles GET request."""
   runPath = sys.argv[0]
   runPath = runPath[:len(runPath)-9]
+  oliviaArr = [
+    "Olivia är bäst!",
+    "Jag älskar dig!",
+    "VAD GÖR DU ÄLSKLING?!",
+    "ASDLASÖLDKJASLÖKDJ KLICKA IGEN!",
+    "GOD MORGON!!!!!!"]
 
   def do_GET(self):
     """Handler for GET request."""
@@ -30,6 +40,7 @@ class RequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
 
   def respond_with_file(self):
+    global oliviaIndex
     requestedFile = self.runPath + self.path[1:]
     if os.path.isfile(requestedFile):
       self.send_file(requestedFile)
@@ -69,14 +80,24 @@ class RequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         self.wfile.write('{"status":"on", "artist":"%s","title":"%s","art":"%s","duration":"%s","position":"%s"}\n' % (artist, title, art, duration, position))
       else:
         self.wfile.write('{"status":"off"}')
+    elif requestedFile.endswith('olivia.json'):
+      self.send_response(200)
+      self.send_header('Content-type', 'application/json')
+      self.send_header('Cache-Control', 'no-cache')
+      self.end_headers()
+      self.wfile.write('{"value":"%s"}\n' % self.oliviaArr[oliviaIndex])
+    elif requestedFile.endswith('olivia_update.json'):
+      self.send_response(200)
+      self.end_headers()
+      oliviaIndex = random.randint(0,4)
+      self.wfile.write('')
     else:
       """Responds to the current request that has an unknown path."""
       self.send_response(404)
       self.send_header('Content-type', 'text/plain')
       self.send_header('Cache-Control', 'no-cache')
       self.end_headers()
-      self.wfile.write(
-        'This path is invalid %s\n\n' % requestedFile)
+      self.wfile.write('This path is invalid %s\n\n' % requestedFile)
 
   def send_file(self,requestedFile):
     self.send_response(200)

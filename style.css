@@ -35,6 +35,13 @@ li {
   max-width: 180px;
 }
 
+#olivia {
+  position: absolute;
+  top: 85px;
+  left: 0px;
+  display: inline-block;
+}
+
 #calendar {
   position: absolute;
   top: 85px;
