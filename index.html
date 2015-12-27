@@ -23,24 +23,28 @@
 
   //Define intervals
   setInterval(reDrawTime, 1000); //Redraw everything related to time once a second
-//  setInterval(checkAuth,60000); //Request calendar updates once a minute
-  setInterval(reDrawWeather,3600000); //Request weather data once per hour
+  //setInterval(checkAuth,60000); //Request calendar updates once a minute
+  //setInterval(reDrawWeather,3600000); //Request weather data once per hour
   setInterval(reDrawExcuse,3600000); //Request excuse data once per hour
 
-  reDrawWeather();
+  //reDrawWeather();
+  reDrawTime();
   reDrawExcuse();
   reDrawSonos();
 
   function reDrawSonos() {
     $.get('sonos.json', function(data){
       var timeout = 10000;
-      if(data && data.artist) {
-      $('#sonos').html('<p><img src="' + data.art +'" /><br /><u>' + data.artist  + '</u><br /> '+ data.title  + '</p>');
-        var duration = getMilliseconds(data.duration);
-        var position = getMilliseconds(data.position);
-        timeout = duration - position;
-      } else {
-        $('#sonos').html('');
+      try {
+        if(data && data.artist) {
+          $('#sonos').html('<p><img src="' + data.art +'" /><br /><u>' + data.artist  + '</u><br /> '+ data.title  + '</p>');
+          var duration = getMilliseconds(data.duration);
+          var position = getMilliseconds(data.position);
+          timeout = duration - position;
+        } else {
+          $('#sonos').html('');
+        }
+      } catch(err) {        
       }
       setTimeout(reDrawSonos, timeout);
     }).error(function() {
